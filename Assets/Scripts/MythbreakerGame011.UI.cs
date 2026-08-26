@@ -10,7 +10,7 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
 
     void Menu(int w,int h,float s)
     {
-        Fill(new Rect(0,0,w,h),new Color(.005f,.01f,.03f));if(menu!=null){GUI.color=Color.white;GUI.DrawTexture(new Rect(0,0,w,h),menu,ScaleMode.ScaleAndCrop,true);}Fill(new Rect(0,0,w,h*.10f),new Color(0,0,0,.15f));GUI.color=Color.white;GUI.Label(new Rect(w*.79f,h*.012f,w*.17f,28*s),"v0.11",Right((int)(13*s)));
+        Fill(new Rect(0,0,w,h),new Color(.005f,.01f,.03f));if(menu!=null){GUI.color=Color.white;GUI.DrawTexture(new Rect(0,0,w,h),menu,ScaleMode.ScaleAndCrop,true);}Fill(new Rect(0,0,w,h*.10f),new Color(0,0,0,.15f));GUI.color=Color.white;GUI.Label(new Rect(w*.79f,h*.012f,w*.17f,28*s),"v0.12",Right((int)(13*s)));
         GUIStyle inv=Invisible();if(GUI.Button(new Rect(w*.10f,h*.72f,w*.80f,h*.17f),"",inv))NewRun();if(GUI.Button(new Rect(0,h*.89f,w*.49f,h*.11f),"",inv)){state=State.Heroes;Haptic();}if(GUI.Button(new Rect(w*.51f,h*.89f,w*.49f,h*.11f),"",inv)){state=State.Settings;Haptic();}
     }
     void Heroes(int w,int h,float s){Panel(w,h);GUI.color=Gold();GUI.Label(new Rect(0,h*.06f,w,60*s),"EROI",Center((int)(38*s)));GUI.color=Color.white;Rect c=new Rect(w*.08f,h*.20f,w*.84f,h*.36f);Fill(c,new Color(.03f,.08f,.16f,.98f));Stroke(c,Gold(),3);Tex(perseo,new Vector2(w*.29f,h*.39f),w*.30f,w*.38f);GUI.color=Gold();GUI.Label(new Rect(w*.46f,h*.27f,w*.40f,44*s),"PERSEO",Left((int)(27*s)));GUI.color=Color.white;GUI.Label(new Rect(w*.46f,h*.33f,w*.40f,120*s),"Lancia divina\nPrecisione • mobilità\nEroe iniziale",Left((int)(17*s)));GUI.Label(new Rect(w*.08f,h*.61f,w*.84f,90*s),"ERACLE • ATALANTA • ACHILLE\nprossimamente",Center((int)(17*s)));if(GUI.Button(new Rect(w*.20f,h*.82f,w*.60f,68*s),"INDIETRO",Btn((int)(21*s))))state=State.Menu;}
@@ -29,7 +29,6 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
 
         Hud(w,h,s);
 
-        // Persistent subtle joystick hint. The real joystick still follows the first touch, so control stays natural.
         if(!dragging)
         {
             Vector2 idle=new Vector2(w*.50f,h*.815f);
