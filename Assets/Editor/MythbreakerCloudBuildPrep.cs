@@ -18,7 +18,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        Debug.Log("MYTHBREAKER 0.6 CLEAN PREBUILD START");
+        Debug.Log("MYTHBREAKER 0.7 PREBUILD START");
 
         if (!File.Exists(MainScene))
             throw new BuildFailedException("Main scene missing: " + MainScene);
@@ -35,7 +35,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-        Debug.Log("MYTHBREAKER 0.6 CLEAN PREBUILD READY");
+        Debug.Log("MYTHBREAKER 0.7 PREBUILD READY");
     }
 
     static void WriteIconFile()
@@ -74,10 +74,10 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
     {
         PlayerSettings.companyName = "Lello's Game";
         PlayerSettings.productName = "Mythbreaker";
-        PlayerSettings.bundleVersion = "0.6.0";
+        PlayerSettings.bundleVersion = "0.7.0";
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.lellosgame.mythbreaker");
-        PlayerSettings.Android.bundleVersionCode = 6;
+        PlayerSettings.Android.bundleVersionCode = 7;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -112,7 +112,6 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
             PlayerSettings.SetPlatformIcons(target, kind, slots);
         }
 
-        // Legacy fallback as well, for launchers that still read the old icon array.
         int[] legacySizes = PlayerSettings.GetIconSizesForTargetGroup(BuildTargetGroup.Android);
         if (legacySizes != null && legacySizes.Length > 0)
         {
@@ -121,7 +120,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
             PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android, legacy);
         }
 
-        Debug.Log("MYTHBREAKER 0.6 assigned launcher artwork to " + assigned + " modern Android icon slots.");
+        Debug.Log("MYTHBREAKER 0.7 assigned launcher artwork to " + assigned + " modern Android icon slots.");
     }
 }
 #endif
