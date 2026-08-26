@@ -18,41 +18,27 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        Debug.Log("MYTHBREAKER 0.7 PREBUILD START");
-
-        if (!File.Exists(MainScene))
-            throw new BuildFailedException("Main scene missing: " + MainScene);
-        if (!File.Exists(IconBase64))
-            throw new BuildFailedException("Icon source missing: " + IconBase64);
-
+        Debug.Log("MYTHBREAKER 0.8 PREBUILD START");
+        if (!File.Exists(MainScene)) throw new BuildFailedException("Main scene missing: " + MainScene);
+        if (!File.Exists(IconBase64)) throw new BuildFailedException("Icon source missing: " + IconBase64);
         Directory.CreateDirectory(GeneratedDir);
         WriteIconFile();
         ImportIcon();
         ApplyPlayerSettings();
         ApplyAndroidIcons();
-
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScene, true) };
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-
-        Debug.Log("MYTHBREAKER 0.7 PREBUILD READY");
+        Debug.Log("MYTHBREAKER 0.8 PREBUILD READY");
     }
 
     static void WriteIconFile()
     {
-        string encoded = File.ReadAllText(IconBase64)
-            .Replace("\r", "")
-            .Replace("\n", "")
-            .Replace(" ", "")
-            .Trim();
-
+        string encoded = File.ReadAllText(IconBase64).Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim();
         byte[] bytes;
         try { bytes = Convert.FromBase64String(encoded); }
         catch (Exception e) { throw new BuildFailedException("Icon Base64 invalid: " + e.Message); }
-
-        if (bytes.Length < 1000)
-            throw new BuildFailedException("Icon data is too small.");
-
+        if (bytes.Length < 1000) throw new BuildFailedException("Icon data is too small.");
         File.WriteAllBytes(IconPath, bytes);
     }
 
@@ -60,9 +46,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
     {
         AssetDatabase.ImportAsset(IconPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
         TextureImporter importer = AssetImporter.GetAtPath(IconPath) as TextureImporter;
-        if (importer == null)
-            throw new BuildFailedException("Icon TextureImporter unavailable.");
-
+        if (importer == null) throw new BuildFailedException("Icon TextureImporter unavailable.");
         importer.textureType = TextureImporterType.Default;
         importer.mipmapEnabled = false;
         importer.alphaIsTransparency = true;
@@ -74,10 +58,10 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
     {
         PlayerSettings.companyName = "Lello's Game";
         PlayerSettings.productName = "Mythbreaker";
-        PlayerSettings.bundleVersion = "0.7.0";
+        PlayerSettings.bundleVersion = "0.8.0";
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.lellosgame.mythbreaker");
-        PlayerSettings.Android.bundleVersionCode = 7;
+        PlayerSettings.Android.bundleVersionCode = 8;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -86,20 +70,15 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
     static void ApplyAndroidIcons()
     {
         Texture2D iconTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
-        if (iconTexture == null)
-            throw new BuildFailedException("Imported launcher icon could not be loaded.");
-
+        if (iconTexture == null) throw new BuildFailedException("Imported launcher icon could not be loaded.");
         NamedBuildTarget target = NamedBuildTarget.Android;
         PlatformIconKind[] kinds = PlayerSettings.GetSupportedIconKinds(target);
-        if (kinds == null || kinds.Length == 0)
-            throw new BuildFailedException("Unity returned no Android icon kinds.");
-
+        if (kinds == null || kinds.Length == 0) throw new BuildFailedException("Unity returned no Android icon kinds.");
         int assigned = 0;
         foreach (PlatformIconKind kind in kinds)
         {
             PlatformIcon[] slots = PlayerSettings.GetPlatformIcons(target, kind);
             if (slots == null) continue;
-
             for (int i = 0; i < slots.Length; i++)
             {
                 int layers = Mathf.Max(1, slots[i].maxLayerCount);
@@ -108,10 +87,8 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
                 slots[i].SetTextures(textures);
                 assigned++;
             }
-
             PlayerSettings.SetPlatformIcons(target, kind, slots);
         }
-
         int[] legacySizes = PlayerSettings.GetIconSizesForTargetGroup(BuildTargetGroup.Android);
         if (legacySizes != null && legacySizes.Length > 0)
         {
@@ -119,8 +96,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
             for (int i = 0; i < legacy.Length; i++) legacy[i] = iconTexture;
             PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android, legacy);
         }
-
-        Debug.Log("MYTHBREAKER 0.7 assigned launcher artwork to " + assigned + " modern Android icon slots.");
+        Debug.Log("MYTHBREAKER 0.8 assigned launcher artwork to " + assigned + " modern Android icon slots.");
     }
 }
 #endif
