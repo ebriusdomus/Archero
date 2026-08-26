@@ -19,18 +19,69 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
 
     void Game(int w,int h,float s)
     {
-        Fill(new Rect(0,0,w,h),Outside());Rect a=Arena();GUI.color=Color.white;GUI.DrawTexture(a,bg[Mathf.Clamp(level-1,0,4)],ScaleMode.ScaleAndCrop,true);Fill(a,new Color(0,0,0,level==5?.10f:.025f));Stroke(a,Gold(),2);
-        Rect[] os=Obstacles();for(int i=0;i<os.Length;i++)Obstacle(os[i],w,h);
-        Hud(w,h,s);Vector2 hc=new Vector2(hero.x*w,hero.y*h);Shadow(hc,w*.075f,w*.035f,.30f);Tex(perseo,hc,w*.175f,w*.215f);MiniHp(hc,hp/maxHp,w*.12f,s,new Color(.10f,.86f,.23f));
-        for(int i=0;i<enemies.Count;i++)EnemyDraw(enemies[i],w,h,s);for(int i=0;i<shots.Count;i++)ShotDraw(shots[i],w,h);
-        if(dragging){float r=Mathf.Max(100,w*.17f);Circle(dragStart,r,new Color(.01f,.04f,.10f,.28f));Vector2 k=dragStart+Vector2.ClampMagnitude(dragNow-dragStart,r);Circle(k,r*.36f,new Color(.08f,.48f,1f,.76f));Circle(k,r*.20f,new Color(.42f,.80f,1f,.80f));}
+        Fill(new Rect(0,0,w,h),Outside());
+        Rect a=Arena();
+        GUI.color=Color.white;
+        if(bg[Mathf.Clamp(level-1,0,4)]!=null)GUI.DrawTexture(a,bg[Mathf.Clamp(level-1,0,4)],ScaleMode.ScaleAndCrop,true);
+        else Fill(a,new Color(.30f,.46f,.20f));
+        if(level==5)Fill(a,new Color(.12f,.025f,.005f,.06f));
+        Stroke(a,Gold(),2);
+
+        Hud(w,h,s);
+
+        // Persistent subtle joystick hint. The real joystick still follows the first touch, so control stays natural.
+        if(!dragging)
+        {
+            Vector2 idle=new Vector2(w*.50f,h*.815f);
+            Circle(idle,w*.105f,new Color(.02f,.09f,.16f,.13f));
+            Circle(idle,w*.058f,new Color(.03f,.34f,.76f,.20f));
+            Circle(idle,w*.027f,new Color(.08f,.42f,.92f,.30f));
+        }
+
+        Vector2 hc=new Vector2(hero.x*w,hero.y*h);
+        Shadow(hc,w*.082f,w*.038f,.30f);
+        Tex(perseo,hc,w*.19f,w*.235f);
+        MiniHp(hc,hp/maxHp,w*.13f,s,new Color(.10f,.86f,.23f));
+
+        for(int i=0;i<enemies.Count;i++)EnemyDraw(enemies[i],w,h,s);
+        for(int i=0;i<shots.Count;i++)ShotDraw(shots[i],w,h);
+
+        if(dragging)
+        {
+            float r=Mathf.Max(105,w*.18f);
+            Circle(dragStart,r,new Color(.01f,.04f,.10f,.26f));
+            Circle(dragStart,r*.72f,new Color(.05f,.30f,.55f,.12f));
+            Vector2 k=dragStart+Vector2.ClampMagnitude(dragNow-dragStart,r);
+            Circle(k,r*.35f,new Color(.06f,.46f,1f,.72f));
+            Circle(k,r*.17f,new Color(.46f,.82f,1f,.86f));
+        }
+
         GUI.color=Gold();GUI.Label(new Rect(0,h*.878f,w,32*s),LevelName(),Center((int)(14*s)));GUI.color=Color.white;
     }
+
     Color Outside(){return level==1?new Color(.035f,.025f,.018f):level==2?new Color(.018f,.05f,.022f):level==3?new Color(.015f,.04f,.06f):level==4?new Color(.025f,.02f,.04f):new Color(.055f,.012f,.006f);}
     string LevelName(){return level==1?"ROVINE DI ATENE":level==2?"FORESTA SACRA":level==3?"COSTA DI SALAMINA":level==4?"FORTEZZA DI MEGARA":"LABIRINTO DEL MINOTAURO";}
-    void Obstacle(Rect n,int w,int h){Rect r=new Rect(n.x*w,n.y*h,n.width*w,n.height*h);Color edge=level==5?new Color(.88f,.34f,.08f,.88f):new Color(.82f,.68f,.42f,.75f);Fill(new Rect(r.x+6,r.y+9,r.width,r.height),new Color(0,0,0,.30f));Fill(r,new Color(.15f,.12f,.09f,.28f));Stroke(r,edge,2);Fill(new Rect(r.x+5,r.y+5,r.width-10,Mathf.Max(3,r.height*.12f)),new Color(1f,.86f,.58f,.14f));}
-    void Hud(int w,int h,float s){Fill(new Rect(0,0,w,h*.106f),new Color(.004f,.010f,.028f,.98f));Fill(new Rect(0,h*.103f,w,2),Gold());GUI.color=Color.white;GUI.Label(new Rect(w*.035f,h*.008f,w*.28f,38*s),"PERSEO",Left((int)(19*s)));GUI.color=Gold();GUI.Label(new Rect(w*.28f,h*.008f,w*.50f,38*s),"ATTICA • LIVELLO "+level,Center((int)(18*s)));GUI.color=Color.white;GUI.Label(new Rect(w*.78f,h*.008f,w*.18f,38*s),"◆ "+coins,Right((int)(17*s)));Rect r=new Rect(w*.07f,h*.064f,w*.67f,12*s);Fill(r,new Color(.06f,.04f,.04f));Fill(new Rect(r.x,r.y,r.width*Mathf.Clamp01(hp/maxHp),r.height),new Color(.10f,.82f,.23f));Stroke(r,new Color(.88f,.74f,.40f),1);GUI.Label(new Rect(w*.74f,h*.050f,w*.22f,30*s),Mathf.CeilToInt(hp)+"/"+Mathf.CeilToInt(maxHp),Right((int)(13*s)));}
-    void EnemyDraw(Enemy e,int w,int h,float s){Texture2D t=e.type==EType.Assassin?assassin:e.type==EType.Gorgon?gorgon:e.type==EType.Hoplite?hoplite:minotaur;Vector2 c=new Vector2(e.p.x*w,e.p.y*h);float ww=e.type==EType.Minotaur?w*.31f:e.type==EType.Gorgon?w*.18f:e.type==EType.Hoplite?w*.17f:w*.155f;float hh=e.type==EType.Minotaur?w*.34f:e.type==EType.Gorgon?w*.21f:e.type==EType.Hoplite?w*.205f:w*.18f;Shadow(c,ww*.42f,ww*.19f,e.type==EType.Minotaur?.42f:.29f);Color old=GUI.color;if(e.flash>0)GUI.color=Color.Lerp(Color.white,new Color(1f,.35f,.20f),e.flash*.55f);Tex(t,c,ww,hh);GUI.color=old;float bw=e.type==EType.Minotaur?w*.28f:ww*.78f;Rect bar=new Rect(c.x-bw*.5f,c.y-hh*.57f,bw,Mathf.Max(5,6*s));Fill(bar,new Color(.07f,.015f,.01f));Fill(new Rect(bar.x,bar.y,bar.width*Mathf.Clamp01(e.hp/e.maxHp),bar.height),e.type==EType.Minotaur?new Color(.98f,.18f,.025f):new Color(.84f,.075f,.035f));Stroke(bar,new Color(.20f,.04f,.02f),1);}
+
+    void Hud(int w,int h,float s)
+    {
+        Fill(new Rect(0,0,w,h*.106f),new Color(.004f,.010f,.028f,.98f));Fill(new Rect(0,h*.103f,w,2),Gold());
+        GUI.color=Color.white;GUI.Label(new Rect(w*.035f,h*.008f,w*.28f,38*s),"PERSEO",Left((int)(19*s)));
+        GUI.color=Gold();GUI.Label(new Rect(w*.28f,h*.008f,w*.50f,38*s),"ATTICA • LIVELLO "+level,Center((int)(18*s)));
+        GUI.color=Color.white;GUI.Label(new Rect(w*.78f,h*.008f,w*.18f,38*s),"◆ "+coins,Right((int)(17*s)));
+        Rect r=new Rect(w*.07f,h*.064f,w*.67f,12*s);Fill(r,new Color(.06f,.04f,.04f));Fill(new Rect(r.x,r.y,r.width*Mathf.Clamp01(hp/maxHp),r.height),new Color(.10f,.82f,.23f));Stroke(r,new Color(.88f,.74f,.40f),1);GUI.Label(new Rect(w*.74f,h*.050f,w*.22f,30*s),Mathf.CeilToInt(hp)+"/"+Mathf.CeilToInt(maxHp),Right((int)(13*s)));
+    }
+
+    void EnemyDraw(Enemy e,int w,int h,float s)
+    {
+        Texture2D t=e.type==EType.Assassin?assassin:e.type==EType.Gorgon?gorgon:e.type==EType.Hoplite?hoplite:minotaur;
+        Vector2 c=new Vector2(e.p.x*w,e.p.y*h);
+        float ww=e.type==EType.Minotaur?w*.35f:e.type==EType.Gorgon?w*.21f:e.type==EType.Hoplite?w*.19f:w*.17f;
+        float hh=e.type==EType.Minotaur?w*.39f:e.type==EType.Gorgon?w*.245f:e.type==EType.Hoplite?w*.225f:w*.20f;
+        Shadow(c,ww*.42f,ww*.19f,e.type==EType.Minotaur?.42f:.29f);
+        Color old=GUI.color;if(e.flash>0)GUI.color=Color.Lerp(Color.white,new Color(1f,.35f,.20f),e.flash*.55f);Tex(t,c,ww,hh);GUI.color=old;
+        float bw=e.type==EType.Minotaur?w*.30f:ww*.78f;Rect bar=new Rect(c.x-bw*.5f,c.y-hh*.57f,bw,Mathf.Max(5,6*s));Fill(bar,new Color(.07f,.015f,.01f));Fill(new Rect(bar.x,bar.y,bar.width*Mathf.Clamp01(e.hp/e.maxHp),bar.height),e.type==EType.Minotaur?new Color(.98f,.18f,.025f):new Color(.84f,.075f,.035f));Stroke(bar,new Color(.20f,.04f,.02f),1);
+    }
+
     void ShotDraw(Shot q,int w,int h){Vector2 c=new Vector2(q.p.x*w,q.p.y*h),dir=q.v.sqrMagnitude>.0001f?q.v.normalized:Vector2.up,tail=c-new Vector2(dir.x*w*.030f,dir.y*h*.018f);Line(tail,c,new Color(.10f,.52f,1f,.24f),w*.019f);Line((tail+c)*.5f,c,new Color(.40f,.82f,1f,.65f),w*.010f);float r=w*.010f;Circle(c,r*2.5f,new Color(.05f,.35f,1f,.16f));Circle(c,r*1.2f,new Color(.12f,.62f,1f,.78f));Circle(c,r*.48f,Color.white);}
     void MiniHp(Vector2 c,float ratio,float width,float s,Color col){Rect r=new Rect(c.x-width*.5f,c.y-width*.52f,width,Mathf.Max(5,6*s));Fill(r,new Color(.02f,.03f,.02f,.86f));Fill(new Rect(r.x,r.y,r.width*Mathf.Clamp01(ratio),r.height),col);Stroke(r,new Color(.06f,.13f,.05f),1);}
 
