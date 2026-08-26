@@ -18,7 +18,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        Debug.Log("MYTHBREAKER 0.8 PREBUILD START");
+        Debug.Log("MYTHBREAKER 0.9 PREBUILD START");
         if (!File.Exists(MainScene)) throw new BuildFailedException("Main scene missing: " + MainScene);
         if (!File.Exists(IconBase64)) throw new BuildFailedException("Icon source missing: " + IconBase64);
         Directory.CreateDirectory(GeneratedDir);
@@ -29,7 +29,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScene, true) };
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
-        Debug.Log("MYTHBREAKER 0.8 PREBUILD READY");
+        Debug.Log("MYTHBREAKER 0.9 PREBUILD READY");
     }
 
     static void WriteIconFile()
@@ -58,10 +58,10 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
     {
         PlayerSettings.companyName = "Lello's Game";
         PlayerSettings.productName = "Mythbreaker";
-        PlayerSettings.bundleVersion = "0.8.0";
+        PlayerSettings.bundleVersion = "0.9.0";
         PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.lellosgame.mythbreaker");
-        PlayerSettings.Android.bundleVersionCode = 8;
+        PlayerSettings.Android.bundleVersionCode = 9;
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -96,7 +96,7 @@ public sealed class MythbreakerCloudBuildPrep : IPreprocessBuildWithReport
             for (int i = 0; i < legacy.Length; i++) legacy[i] = iconTexture;
             PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android, legacy);
         }
-        Debug.Log("MYTHBREAKER 0.8 assigned launcher artwork to " + assigned + " modern Android icon slots.");
+        Debug.Log("MYTHBREAKER 0.9 assigned launcher artwork to " + assigned + " modern Android icon slots.");
     }
 }
 #endif
