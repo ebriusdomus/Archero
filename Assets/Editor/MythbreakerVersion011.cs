@@ -10,9 +10,9 @@ public sealed class MythbreakerVersion011 : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        PlayerSettings.bundleVersion = "0.11.0";
-        PlayerSettings.Android.bundleVersionCode = 11;
-        Debug.Log("MYTHBREAKER 0.11 VISUAL BUILD READY");
+        PlayerSettings.bundleVersion = "0.12.0";
+        PlayerSettings.Android.bundleVersionCode = 12;
+        Debug.Log("MYTHBREAKER 0.12 VISUAL REBUILD READY");
     }
 }
 #endif
