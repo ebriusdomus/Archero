@@ -18,9 +18,9 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
     readonly int[] upId=new int[3];
 
     Texture2D circle,menu,perseo,assassin,gorgon,hoplite,minotaur;
-    Vector2 hero=new Vector2(.5f,.79f),dragStart,dragNow,move;
+    Vector2 hero=new Vector2(.5f,.73f),dragStart,dragNow,move;
     bool dragging,vibration=true,sound=true;
-    float hp=520,maxHp=520,moveSpeed=.27f,damage=58,fireRate=.42f,nextShot,hurtCd;
+    float hp=520,maxHp=520,moveSpeed=.22f,damage=58,fireRate=.42f,nextShot,hurtCd;
     int multishot=1,pierce,level=1,kills,coins=224;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -48,7 +48,7 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
     {
         if(state!=State.Play)return;
         ReadInput();
-        if(dragging&&move.sqrMagnitude>.001f){Vector2 n=hero+move*moveSpeed*Time.deltaTime;n.x=Mathf.Clamp(n.x,.12f,.88f);n.y=Mathf.Clamp(n.y,.23f,.82f);if(!Blocked(n))hero=n;}
+        if(dragging&&move.sqrMagnitude>.001f){Vector2 n=hero+move*moveSpeed*Time.deltaTime;n.x=Mathf.Clamp(n.x,.12f,.88f);n.y=Mathf.Clamp(n.y,.22f,.80f);if(!Blocked(n))hero=n;}
         Combat();
     }
 
@@ -58,14 +58,14 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
         Vector2 m=new Vector2(Input.mousePosition.x,Screen.height-Input.mousePosition.y);if(Input.GetMouseButtonDown(0))Begin(m);else if(Input.GetMouseButton(0))Drag(m);else if(Input.GetMouseButtonUp(0))End();
     }
     void Begin(Vector2 p){if(!Arena().Contains(p))return;dragging=true;dragStart=dragNow=p;move=Vector2.zero;}
-    void Drag(Vector2 p){if(!dragging)return;dragNow=p;float r=Mathf.Max(100,Screen.width*.17f);Vector2 raw=Vector2.ClampMagnitude(p-dragStart,r)/r;float m=raw.magnitude;move=m<.12f?Vector2.zero:raw.normalized*Mathf.Pow(Mathf.InverseLerp(.12f,1,m),1.55f);}
+    void Drag(Vector2 p){if(!dragging)return;dragNow=p;float r=Mathf.Max(105,Screen.width*.18f);Vector2 raw=Vector2.ClampMagnitude(p-dragStart,r)/r;float m=raw.magnitude;move=m<.14f?Vector2.zero:raw.normalized*Mathf.Pow(Mathf.InverseLerp(.14f,1,m),1.72f);}
     void End(){dragging=false;move=Vector2.zero;}
     Rect Arena()=>new Rect(Screen.width*.025f,Screen.height*.108f,Screen.width*.95f,Screen.height*.765f);
 
-    void NewRun(){hp=maxHp=520;moveSpeed=.27f;damage=58;fireRate=.42f;multishot=1;pierce=0;level=1;kills=0;coins=224;state=State.Play;Spawn();Haptic();}
+    void NewRun(){hp=maxHp=520;moveSpeed=.22f;damage=58;fireRate=.42f;multishot=1;pierce=0;level=1;kills=0;coins=224;state=State.Play;Spawn();Haptic();}
     void Spawn()
     {
-        enemies.Clear();shots.Clear();End();hero=new Vector2(.5f,.79f);nextShot=hurtCd=0;
+        enemies.Clear();shots.Clear();End();hero=new Vector2(.5f,.73f);nextShot=hurtCd=0;
         if(level==1){Add(EType.Assassin,.28f,.31f);Add(EType.Hoplite,.50f,.27f);Add(EType.Assassin,.72f,.31f);}
         else if(level==2){Add(EType.Gorgon,.27f,.30f);Add(EType.Gorgon,.73f,.30f);Add(EType.Assassin,.50f,.39f);}
         else if(level==3){Add(EType.Hoplite,.25f,.29f);Add(EType.Hoplite,.50f,.25f);Add(EType.Hoplite,.75f,.29f);Add(EType.Assassin,.50f,.40f);}
@@ -75,7 +75,7 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
     void Add(EType t,float x,float y)
     {
         float eh=t==EType.Assassin?95+level*12:t==EType.Gorgon?125+level*14:t==EType.Hoplite?165+level*18:1050;
-        float sp=t==EType.Assassin?.043f:t==EType.Gorgon?.035f:t==EType.Hoplite?.029f:.034f;
+        float sp=t==EType.Assassin?.040f:t==EType.Gorgon?.033f:t==EType.Hoplite?.027f:.031f;
         float r=t==EType.Minotaur?.085f:t==EType.Hoplite?.047f:.041f;
         enemies.Add(new Enemy{p=new Vector2(x,y),hp=eh,maxHp=eh,speed=sp,radius=r,type=t,phase=enemies.Count*1.7f});
     }
@@ -86,7 +86,7 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
         for(int i=enemies.Count-1;i>=0;i--)
         {
             Enemy e=enemies[i];e.flash=Mathf.Max(0,e.flash-dt*5);Vector2 d=hero-e.p;
-            if(d.sqrMagnitude>.0001f){Vector2 dir=d.normalized;if(e.type==EType.Gorgon){Vector2 side=new Vector2(-dir.y,dir.x);dir=(dir+side*Mathf.Sin(Time.time*4+e.phase)*.26f).normalized;}float boost=e.type==EType.Minotaur&&Mathf.Sin(Time.time*2)>.78f?1.65f:1;Vector2 np=e.p+dir*e.speed*boost*dt;if(!Blocked(np))e.p=np;}
+            if(d.sqrMagnitude>.0001f){Vector2 dir=d.normalized;if(e.type==EType.Gorgon){Vector2 side=new Vector2(-dir.y,dir.x);dir=(dir+side*Mathf.Sin(Time.time*4+e.phase)*.26f).normalized;}float boost=e.type==EType.Minotaur&&Mathf.Sin(Time.time*2)>.78f?1.55f:1;Vector2 np=e.p+dir*e.speed*boost*dt;if(!Blocked(np))e.p=np;}
             if(Vector2.Distance(hero,e.p)<e.radius+.042f&&Time.time>=hurtCd){hp-=e.type==EType.Minotaur?60:e.type==EType.Hoplite?32:23;hurtCd=Time.time+.72f;Haptic();if(hp<=0){hp=0;state=State.Lose;End();return;}}
         }
         if(!dragging&&enemies.Count>0&&Time.time>=nextShot){nextShot=Time.time+fireRate;Fire();}
@@ -105,7 +105,7 @@ public sealed partial class MythbreakerGame011 : MonoBehaviour
     }
 
     void PrepareUpgrades(){int seed=level*19+kills*3;for(int i=0;i<3;i++){int id=(seed+i*2)%6;while(i>0&&(id==upId[0]||(i>1&&id==upId[1])))id=(id+1)%6;upId[i]=id;if(id==0){upName[i]="TIRO RAPIDO";upDesc[i]="+15% velocità attacco";}else if(id==1){upName[i]="POTENZA";upDesc[i]="+18 danni";}else if(id==2){upName[i]="ERMES";upDesc[i]="+8% movimento";}else if(id==3){upName[i]="VITALITÀ";upDesc[i]="+80 HP e cura";}else if(id==4){upName[i]="MULTISHOT";upDesc[i]="+1 proiettile";}else{upName[i]="PERFORANTE";upDesc[i]="+1 bersaglio";}}}
-    void Upgrade(int id){if(id==0)fireRate=Mathf.Max(.22f,fireRate*.85f);else if(id==1)damage+=18;else if(id==2)moveSpeed=Mathf.Min(.34f,moveSpeed*1.08f);else if(id==3){maxHp+=80;hp=Mathf.Min(maxHp,hp+110);}else if(id==4)multishot=Mathf.Min(3,multishot+1);else pierce=Mathf.Min(2,pierce+1);level++;state=State.Play;Spawn();Haptic();}
+    void Upgrade(int id){if(id==0)fireRate=Mathf.Max(.22f,fireRate*.85f);else if(id==1)damage+=18;else if(id==2)moveSpeed=Mathf.Min(.30f,moveSpeed*1.08f);else if(id==3){maxHp+=80;hp=Mathf.Min(maxHp,hp+110);}else if(id==4)multishot=Mathf.Min(3,multishot+1);else pierce=Mathf.Min(2,pierce+1);level++;state=State.Play;Spawn();Haptic();}
 
     bool Blocked(Vector2 p){Rect[] a=Obstacles();for(int i=0;i<a.Length;i++){Rect r=a[i];r.xMin-=.018f;r.xMax+=.018f;r.yMin-=.014f;r.yMax+=.014f;if(r.Contains(p))return true;}return false;}
     Rect[] Obstacles(){if(level==1)return new[]{new Rect(.18f,.50f,.14f,.085f),new Rect(.68f,.50f,.14f,.085f)};if(level==2)return new[]{new Rect(.16f,.50f,.13f,.085f),new Rect(.71f,.50f,.13f,.085f),new Rect(.44f,.44f,.12f,.075f)};if(level==3)return new[]{new Rect(.22f,.49f,.13f,.085f),new Rect(.65f,.49f,.13f,.085f),new Rect(.44f,.63f,.12f,.08f)};if(level==4)return new[]{new Rect(.14f,.46f,.12f,.09f),new Rect(.74f,.46f,.12f,.09f),new Rect(.31f,.62f,.12f,.08f),new Rect(.57f,.62f,.12f,.08f)};return new[]{new Rect(.15f,.58f,.13f,.085f),new Rect(.72f,.58f,.13f,.085f)};}
