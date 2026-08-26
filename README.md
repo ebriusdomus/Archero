@@ -67,5 +67,3 @@ Primary platform: Android
 Later: iOS
 
 The first milestone is a vertical slice with Perseus, one Greek environment, core movement/combat, upgrade selection, enemies and one miniboss.
-
-<!-- Unity Cloud Build retry: Mythbreaker 0.9 - 2026-08-26 -->
