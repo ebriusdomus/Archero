@@ -2,105 +2,176 @@ using UnityEngine;
 
 public static class MythbreakerArt011
 {
-    public static Texture2D BuildArena(int theme, int w = 360, int h = 640)
+    const int W=720, H=1280;
+
+    public static Texture2D BuildArena(int level)
     {
-        Color[] px = new Color[w*h];
-        Color baseC = theme==1 ? new Color(.55f,.39f,.22f) : theme==2 ? new Color(.18f,.33f,.13f) : theme==3 ? new Color(.30f,.36f,.34f) : theme==4 ? new Color(.20f,.17f,.28f) : new Color(.25f,.10f,.055f);
-        for(int y=0;y<h;y++) for(int x=0;x<w;x++)
+        Texture2D t=new Texture2D(W,H,TextureFormat.RGB24,false);
+        t.wrapMode=TextureWrapMode.Clamp; t.filterMode=FilterMode.Bilinear;
+
+        Color grass,grass2,stone,stoneHi,stoneLo,water,accent,banner,edge;
+        if(level==1){grass=C("91C94C");grass2=C("99D154");stone=C("E7D6A9");stoneHi=C("F4E7BF");stoneLo=C("A8956C");water=C("47C3E8");accent=C("4DA7FF");banner=C("225A9C");edge=C("4B7938");}
+        else if(level==2){grass=C("72B747");grass2=C("7FC34F");stone=C("D9C995");stoneHi=C("EFE2B6");stoneLo=C("92845D");water=C("39BCE1");accent=C("FF9B27");banner=C("245F92");edge=C("346D35");}
+        else if(level==3){grass=C("79B8A2");grass2=C("83C2AD");stone=C("D8D5C2");stoneHi=C("F0EEE0");stoneLo=C("8C978F");water=C("32B6E7");accent=C("4FCBFF");banner=C("1C6D9C");edge=C("356C65");}
+        else if(level==4){grass=C("66577A");grass2=C("706183");stone=C("A99EAF");stoneHi=C("CDC4D1");stoneLo=C("665A6C");water=C("5550A5");accent=C("B55CFF");banner=C("58277E");edge=C("383244");}
+        else{grass=C("B8783E");grass2=C("C48346");stone=C("D0A56F");stoneHi=C("E6C08A");stoneLo=C("785438");water=C("D65A22");accent=C("FF6A20");banner=C("8B2A18");edge=C("744126");}
+
+        Fill(t,new RectInt(0,0,W,H),edge);
+
+        // Main play field
+        int ax=22, ay=0, aw=W-44, ah=H;
+        Fill(t,new RectInt(ax,ay,aw,ah),grass);
+
+        // Soft checkerboard lawn/stone tiles: readable like a mobile action game, not a flat prototype.
+        int cols=8, rows=15; float cw=aw/(float)cols, ch=ah/(float)rows;
+        for(int y=0;y<rows;y++) for(int x=0;x<cols;x++)
         {
-            float nx=(x-w*.5f)/(w*.5f), ny=(y-h*.48f)/(h*.52f);
-            float vig=Mathf.Clamp01(1f-.22f*(nx*nx+ny*ny));
-            float n=(Hash01(x,y,theme)-.5f)*.07f;
-            Color c=baseC*(vig+n); c.a=1f; px[y*w+x]=c;
+            Color c=((x+y)&1)==0?grass:grass2;
+            RectInt r=new RectInt(Mathf.RoundToInt(ax+x*cw),Mathf.RoundToInt(y*ch),Mathf.CeilToInt(cw)+1,Mathf.CeilToInt(ch)+1);
+            Fill(t,r,c);
         }
 
-        if(theme==2) GrassPath(px,w,h); else StoneFloor(px,w,h,theme);
-        if(theme==1) Attica(px,w,h);
-        else if(theme==2) Forest(px,w,h);
-        else if(theme==3) Coast(px,w,h);
-        else if(theme==4) Fortress(px,w,h);
-        else Labyrinth(px,w,h);
-
-        Texture2D t=new Texture2D(w,h,TextureFormat.RGBA32,false);
-        t.SetPixels(px); t.Apply(false,false); t.wrapMode=TextureWrapMode.Clamp; t.filterMode=FilterMode.Bilinear; return t;
-    }
-
-    static float Hash01(int x,int y,int seed)
-    {
-        unchecked { int n=x*374761393+y*668265263+seed*1442695041; n=(n^(n>>13))*1274126177; n^=n>>16; return (n&0x7fffffff)/2147483647f; }
-    }
-
-    static void StoneFloor(Color[] p,int w,int h,int theme)
-    {
-        Color s=theme==1?new Color(.72f,.54f,.34f):theme==3?new Color(.46f,.51f,.48f):theme==4?new Color(.34f,.30f,.42f):new Color(.36f,.20f,.12f);
-        int x0=(int)(w*.14f),x1=(int)(w*.86f),y0=(int)(h*.06f),y1=(int)(h*.96f),tw=64,th=45;
-        for(int y=y0,row=0;y<y1;y+=th,row++) for(int x=x0-(row%2)*32;x<x1;x+=tw)
+        // Water gives the arenas their own identity instead of copying Archero's generic green room.
+        if(level==2 || level==3)
         {
-            float v=(Hash01(x,y,theme)-.5f)*.10f; Color c=new Color(Mathf.Clamp01(s.r+v),Mathf.Clamp01(s.g+v),Mathf.Clamp01(s.b+v),1);
-            Rounded(p,w,h,x+2,y+2,Mathf.Min(x+tw-3,x1),Mathf.Min(y+th-3,y1),c,5); Outline(p,w,h,x+2,y+2,Mathf.Min(x+tw-3,x1),Mathf.Min(y+th-3,y1),new Color(.15f,.10f,.06f,.42f),1);
-            if(Hash01(x+5,y+7,theme)>.76f){int cx=x+tw/2,cy=y+th/2;Line(p,w,h,cx-9,cy-4,cx+2,cy+4,new Color(.16f,.10f,.07f,.32f),1);}
+            Pool(t,new RectInt(35,430,105,250),water);
+            Pool(t,new RectInt(W-140,430,105,250),water);
+            Pool(t,new RectInt(35,890,105,210),water);
+            Pool(t,new RectInt(W-140,890,105,210),water);
         }
-    }
-
-    static void GrassPath(Color[] p,int w,int h)
-    {
-        Dots(p,w,h,new Color(.31f,.50f,.18f,.62f),3000,91);
-        int cx=w/2;
-        for(int y=(int)(h*.05f),i=0;y<h*.96f;y+=40,i++)
+        if(level==5)
         {
-            int ww=88+(i%3)*12, x=cx-ww/2+((i%4)-2)*8;
-            Rounded(p,w,h,x,y,x+ww,y+50,new Color(.58f,.52f,.36f),8); Outline(p,w,h,x,y,x+ww,y+50,new Color(.27f,.23f,.15f,.70f),2);
+            // Labyrinth side channels / lava.
+            Pool(t,new RectInt(28,330,65,720),water);
+            Pool(t,new RectInt(W-93,330,65,720),water);
         }
+
+        // Vegetation / rocky borders.
+        for(int y=50;y<H-40;y+=78)
+        {
+            Bush(t,36,y,level==4?C("40384C"):level==5?C("5E3B24"):C("2F783E"));
+            Bush(t,W-36,y+26,level==4?C("40384C"):level==5?C("5E3B24"):C("2F783E"));
+        }
+
+        // Temple / gate at top.
+        Temple(t,stone,stoneHi,stoneLo,banner,accent,level);
+
+        // Greek medallion in the centre.
+        Ring(t,W/2,625,100,new Color(stoneHi.r,stoneHi.g,stoneHi.b,.42f));
+        Ring(t,W/2,625,74,new Color(stoneLo.r,stoneLo.g,stoneLo.b,.30f));
+        Ring(t,W/2,625,38,new Color(stoneHi.r,stoneHi.g,stoneHi.b,.26f));
+
+        // Collision blocks, deliberately drawn at the same logical positions used by gameplay.
+        Rect[] obs=Obstacles(level);
+        for(int i=0;i<obs.Length;i++) BlockFromScreenRect(t,obs[i],stone,stoneHi,stoneLo);
+
+        // Small decorative stones / flowers.
+        for(int i=0;i<26;i++)
+        {
+            int x=70+((i*113)%580), y=235+((i*173)%960);
+            if(i%3==0) Circle(t,x,y,5,level==4?C("BA79D2"):level==5?C("E5A45C"):C("F3E9D2"));
+            else Circle(t,x,y,4,new Color(stoneLo.r,stoneLo.g,stoneLo.b,.65f));
+        }
+
+        t.Apply(false,false);
+        return t;
     }
 
-    static void Attica(Color[] p,int w,int h)
+    static Rect[] Obstacles(int l)
     {
-        Rect(p,w,h,0,0,w,(int)(h*.11f),new Color(.15f,.085f,.04f)); Rect(p,w,h,(int)(w*.29f),8,(int)(w*.71f),(int)(h*.10f),new Color(.045f,.03f,.02f)); Outline(p,w,h,(int)(w*.29f),8,(int)(w*.71f),(int)(h*.10f),new Color(.78f,.58f,.24f),3);
-        Column(p,w,h,36,82,new Color(.58f,.49f,.36f)); Column(p,w,h,w-56,82,new Color(.58f,.49f,.36f)); Brazier(p,w,h,52,128,new Color(1f,.42f,.05f)); Brazier(p,w,h,w-52,128,new Color(1f,.42f,.05f));
-        Medallion(p,w,h,w/2,(int)(h*.47f),70,new Color(.74f,.55f,.25f,.48f)); Rubble(p,w,h,new Color(.27f,.18f,.11f),1);
+        if(l==1)return new[]{new Rect(.18f,.50f,.14f,.085f),new Rect(.68f,.50f,.14f,.085f)};
+        if(l==2)return new[]{new Rect(.16f,.50f,.13f,.085f),new Rect(.71f,.50f,.13f,.085f),new Rect(.44f,.44f,.12f,.075f)};
+        if(l==3)return new[]{new Rect(.22f,.49f,.13f,.085f),new Rect(.65f,.49f,.13f,.085f),new Rect(.44f,.63f,.12f,.08f)};
+        if(l==4)return new[]{new Rect(.14f,.46f,.12f,.09f),new Rect(.74f,.46f,.12f,.09f),new Rect(.31f,.62f,.12f,.08f),new Rect(.57f,.62f,.12f,.08f)};
+        return new[]{new Rect(.15f,.58f,.13f,.085f),new Rect(.72f,.58f,.13f,.085f)};
     }
 
-    static void Forest(Color[] p,int w,int h)
+    // Gameplay coordinates are full-screen normalized; convert them to the arena texture local coordinates.
+    static void BlockFromScreenRect(Texture2D t,Rect n,Color stone,Color hi,Color lo)
     {
-        Bushes(p,w,h,new Color(.055f,.18f,.055f),new Color(.14f,.35f,.09f)); Column(p,w,h,38,70,new Color(.46f,.43f,.33f)); Column(p,w,h,w-58,70,new Color(.46f,.43f,.33f));
-        Column(p,w,h,44,(int)(h*.52f),new Color(.38f,.36f,.28f)); Column(p,w,h,w-64,(int)(h*.52f),new Color(.38f,.36f,.28f)); Brazier(p,w,h,56,108,new Color(1f,.45f,.06f)); Brazier(p,w,h,w-56,108,new Color(1f,.45f,.06f));
-        Medallion(p,w,h,w/2,(int)(h*.45f),62,new Color(.72f,.57f,.25f,.30f)); Dots(p,w,h,new Color(.80f,.86f,.35f,.45f),900,131);
+        float lx=(n.x-.025f)/.95f, ly=(n.y-.108f)/.765f;
+        float lw=n.width/.95f, lh=n.height/.765f;
+        RectInt r=new RectInt(Mathf.RoundToInt(lx*W),Mathf.RoundToInt(ly*H),Mathf.RoundToInt(lw*W),Mathf.RoundToInt(lh*H));
+        r.x=Mathf.Clamp(r.x,10,W-r.width-10);r.y=Mathf.Clamp(r.y,110,H-r.height-20);
+        // shadow
+        Fill(t,new RectInt(r.x+9,r.y+11,r.width,r.height),new Color(.16f,.12f,.08f));
+        Fill(t,r,stone);
+        Fill(t,new RectInt(r.x+5,r.y+5,r.width-10,Mathf.Max(7,r.height/5)),hi);
+        Fill(t,new RectInt(r.x+7,r.y+r.height-12,r.width-14,8),lo);
+        Stroke(t,r,lo,3);
+        // block seams
+        if(r.width>80){int mx=r.x+r.width/2;Fill(t,new RectInt(mx-2,r.y+7,4,r.height-14),new Color(lo.r,lo.g,lo.b,.55f));}
     }
 
-    static void Coast(Color[] p,int w,int h)
+    static void Temple(Texture2D t,Color stone,Color hi,Color lo,Color banner,Color flame,int level)
     {
-        int water=(int)(w*.13f); Rect(p,w,h,0,(int)(h*.10f),water,(int)(h*.95f),new Color(.02f,.31f,.43f)); Rect(p,w,h,w-water,(int)(h*.10f),w,(int)(h*.95f),new Color(.02f,.31f,.43f));
-        for(int y=80;y<h-40;y+=45){Line(p,w,h,5,y,water-7,y+9,new Color(.45f,.86f,.93f,.50f),2);Line(p,w,h,w-water+7,y+14,w-5,y+4,new Color(.45f,.86f,.93f,.45f),2);}
-        Column(p,w,h,water+8,74,new Color(.50f,.52f,.48f)); Column(p,w,h,w-water-28,74,new Color(.50f,.52f,.48f)); Medallion(p,w,h,w/2,(int)(h*.47f),68,new Color(.64f,.57f,.36f,.42f));
+        Fill(t,new RectInt(48,30,W-96,155),lo);
+        Fill(t,new RectInt(70,18,W-140,130),stone);
+        Fill(t,new RectInt(88,14,W-176,28),hi);
+        // doorway
+        Fill(t,new RectInt(W/2-92,56,184,115),C("171716"));
+        Fill(t,new RectInt(W/2-78,66,156,100),level==5?C("5C2416"):C("222425"));
+        // columns
+        Column(t,126,48,stone,hi,lo); Column(t,W-154,48,stone,hi,lo);
+        // banners
+        Fill(t,new RectInt(180,58,48,90),banner); Fill(t,new RectInt(W-228,58,48,90),banner);
+        // steps
+        for(int i=0;i<4;i++) Fill(t,new RectInt(W/2-130+i*12,166+i*16,260-i*24,18),i%2==0?stone:hi);
+        Torch(t,92,165,flame); Torch(t,W-92,165,flame);
     }
 
-    static void Fortress(Color[] p,int w,int h)
+    static void Column(Texture2D t,int x,int y,Color stone,Color hi,Color lo)
     {
-        Rect(p,w,h,0,0,w,(int)(h*.10f),new Color(.09f,.07f,.15f)); Column(p,w,h,32,68,new Color(.35f,.31f,.42f)); Column(p,w,h,w-52,68,new Color(.35f,.31f,.42f)); Brazier(p,w,h,46,116,new Color(.58f,.16f,1f)); Brazier(p,w,h,w-46,116,new Color(.58f,.16f,1f));
-        Block(p,w,h,46,245);Block(p,w,h,w-106,245);Block(p,w,h,46,425);Block(p,w,h,w-106,425);Medallion(p,w,h,w/2,(int)(h*.47f),66,new Color(.62f,.48f,.72f,.30f));
+        Fill(t,new RectInt(x,y,34,110),stone);Fill(t,new RectInt(x+6,y,8,110),hi);
+        Fill(t,new RectInt(x-8,y,50,14),hi);Fill(t,new RectInt(x-6,y+98,46,15),lo);
     }
 
-    static void Labyrinth(Color[] p,int w,int h)
+    static void Torch(Texture2D t,int x,int y,Color flame)
     {
-        Rubble(p,w,h,new Color(.12f,.05f,.025f),5); Color wall=new Color(.20f,.065f,.03f), glow=new Color(.98f,.27f,.03f,.48f);
-        Maze(p,w,h,40,175,145,175,145,270,wall,glow);Maze(p,w,h,w-40,175,w-145,175,w-145,270,wall,glow);Maze(p,w,h,40,420,150,420,150,530,wall,glow);Maze(p,w,h,w-40,420,w-150,420,w-150,530,wall,glow);
-        Brazier(p,w,h,44,108,new Color(1f,.18f,.02f));Brazier(p,w,h,w-44,108,new Color(1f,.18f,.02f));Brazier(p,w,h,44,h-68,new Color(1f,.18f,.02f));Brazier(p,w,h,w-44,h-68,new Color(1f,.18f,.02f));
-        Medallion(p,w,h,w/2,(int)(h*.46f),76,new Color(.94f,.31f,.07f,.28f));
+        Circle(t,x,y,23,new Color(flame.r,flame.g,flame.b,.28f));
+        Circle(t,x,y,12,flame);Circle(t,x,y-4,5,C("FFF2A6"));
     }
 
-    static void Maze(Color[] p,int w,int h,int x1,int y1,int x2,int y2,int x3,int y3,Color wall,Color glow){Line(p,w,h,x1,y1,x2,y2,wall,12);Line(p,w,h,x2,y2,x3,y3,wall,12);Line(p,w,h,x1,y1,x2,y2,glow,2);Line(p,w,h,x2,y2,x3,y3,glow,2);}
-    static void Block(Color[] p,int w,int h,int x,int y){Rounded(p,w,h,x,y,x+60,y+78,new Color(.18f,.15f,.25f),7);Outline(p,w,h,x,y,x+60,y+78,new Color(.76f,.61f,.34f,.75f),2);Outline(p,w,h,x+8,y+9,x+52,y+69,new Color(.34f,.30f,.42f,.85f),1);}
-    static void Column(Color[] p,int w,int h,int x,int y,Color c){Rect(p,w,h,x,y,x+20,y+74,c);Rect(p,w,h,x-5,y-5,x+25,y+7,c*1.07f);Rect(p,w,h,x-5,y+67,x+25,y+79,c*.72f);Rect(p,w,h,x+4,y+4,x+7,y+67,new Color(1,1,1,.12f));Rect(p,w,h,x+15,y+4,x+19,y+67,new Color(0,0,0,.15f));}
-    static void Brazier(Color[] p,int w,int h,int cx,int cy,Color f){Circle(p,w,h,cx,cy,18,new Color(f.r,f.g,f.b,.15f));Circle(p,w,h,cx,cy,10,new Color(.14f,.10f,.06f,1));Circle(p,w,h,cx,cy-2,6,new Color(f.r,f.g,f.b,.95f));Circle(p,w,h,cx,cy-5,3,new Color(1f,.88f,.32f,1));}
-    static void Medallion(Color[] p,int w,int h,int cx,int cy,int r,Color c){Ring(p,w,h,cx,cy,r,r-3,c);Ring(p,w,h,cx,cy,r-12,r-14,new Color(c.r,c.g,c.b,c.a*.8f));for(int a=0;a<360;a+=45){float q=a*Mathf.Deg2Rad;Line(p,w,h,cx+(int)(Mathf.Cos(q)*(r-22)),cy+(int)(Mathf.Sin(q)*(r-22)),cx+(int)(Mathf.Cos(q)*(r-7)),cy+(int)(Mathf.Sin(q)*(r-7)),new Color(c.r,c.g,c.b,c.a*.62f),2);}}
-    static void Rubble(Color[] p,int w,int h,Color c,int seed){for(int i=0;i<22;i++){int y=68+i*25,sz=10+(i*7+seed*3)%13;Rounded(p,w,h,4,y,4+sz,y+sz,c,3);Rounded(p,w,h,w-4-sz,y+8,w-4,y+8+sz,c*.90f,3);}}
-    static void Bushes(Color[] p,int w,int h,Color d,Color l){for(int y=52;y<h-20;y+=28){int r=17+(y/28)%7;Circle(p,w,h,10,y,r,d);Circle(p,w,h,22,y+5,r-5,l);Circle(p,w,h,w-10,y,r,d);Circle(p,w,h,w-22,y+5,r-5,l);}}
-    static void Dots(Color[] p,int w,int h,Color c,int count,int seed){for(int i=0;i<count;i++){int x=(int)(Hash01(i,seed,3)*w),y=(int)(Hash01(seed,i,7)*h);Blend(p,w,h,x,y,c);}}
-    static void Rect(Color[] p,int w,int h,int x0,int y0,int x1,int y1,Color c){x0=Mathf.Clamp(x0,0,w);x1=Mathf.Clamp(x1,0,w);y0=Mathf.Clamp(y0,0,h);y1=Mathf.Clamp(y1,0,h);for(int y=y0;y<y1;y++)for(int x=x0;x<x1;x++)Blend(p,w,h,x,y,c);}
-    static void Rounded(Color[] p,int w,int h,int x0,int y0,int x1,int y1,Color c,int r){x0=Mathf.Clamp(x0,0,w);x1=Mathf.Clamp(x1,0,w);y0=Mathf.Clamp(y0,0,h);y1=Mathf.Clamp(y1,0,h);for(int y=y0;y<y1;y++)for(int x=x0;x<x1;x++){int dx=Mathf.Max(Mathf.Max(x0+r-x,0),x-(x1-r-1));int dy=Mathf.Max(Mathf.Max(y0+r-y,0),y-(y1-r-1));if(dx*dx+dy*dy<=r*r)Blend(p,w,h,x,y,c);}}
-    static void Outline(Color[] p,int w,int h,int x0,int y0,int x1,int y1,Color c,int t){Rect(p,w,h,x0,y0,x1,y0+t,c);Rect(p,w,h,x0,y1-t,x1,y1,c);Rect(p,w,h,x0,y0,x0+t,y1,c);Rect(p,w,h,x1-t,y0,x1,y1,c);}
-    static void Circle(Color[] p,int w,int h,int cx,int cy,int r,Color c){int rr=r*r;for(int y=Mathf.Max(0,cy-r);y<Mathf.Min(h,cy+r+1);y++)for(int x=Mathf.Max(0,cx-r);x<Mathf.Min(w,cx+r+1);x++)if((x-cx)*(x-cx)+(y-cy)*(y-cy)<=rr)Blend(p,w,h,x,y,c);}
-    static void Ring(Color[] p,int w,int h,int cx,int cy,int o,int inn,Color c){int oo=o*o,ii=inn*inn;for(int y=Mathf.Max(0,cy-o);y<Mathf.Min(h,cy+o+1);y++)for(int x=Mathf.Max(0,cx-o);x<Mathf.Min(w,cx+o+1);x++){int d=(x-cx)*(x-cx)+(y-cy)*(y-cy);if(d<=oo&&d>=ii)Blend(p,w,h,x,y,c);}}
-    static void Line(Color[] p,int w,int h,int x0,int y0,int x1,int y1,Color c,int t){int dx=Mathf.Abs(x1-x0),sx=x0<x1?1:-1,dy=-Mathf.Abs(y1-y0),sy=y0<y1?1:-1,err=dx+dy;while(true){Circle(p,w,h,x0,y0,Mathf.Max(1,t/2),c);if(x0==x1&&y0==y1)break;int e2=2*err;if(e2>=dy){err+=dy;x0+=sx;}if(e2<=dx){err+=dx;y0+=sy;}}}
-    static void Blend(Color[] p,int w,int h,int x,int y,Color c){if(x<0||x>=w||y<0||y>=h)return;int i=(h-1-y)*w+x;float a=Mathf.Clamp01(c.a);Color d=p[i];p[i]=new Color(d.r*(1-a)+c.r*a,d.g*(1-a)+c.g*a,d.b*(1-a)+c.b*a,1);}
+    static void Pool(Texture2D t,RectInt r,Color water)
+    {
+        Fill(t,new RectInt(r.x-6,r.y-6,r.width+12,r.height+12),C("5C7948"));
+        Fill(t,r,water);
+        Fill(t,new RectInt(r.x+6,r.y+6,r.width-12,10),new Color(1f,1f,1f,.15f));
+        for(int y=r.y+24;y<r.yMax-10;y+=38) Fill(t,new RectInt(r.x+14,y,r.width-28,3),new Color(1f,1f,1f,.10f));
+    }
+
+    static void Bush(Texture2D t,int x,int y,Color c)
+    {
+        Circle(t,x+4,y+8,30,new Color(c.r*.58f,c.g*.58f,c.b*.58f));
+        Circle(t,x,y,28,c);Circle(t,x+18,y+5,22,new Color(Mathf.Min(1,c.r*1.12f),Mathf.Min(1,c.g*1.12f),Mathf.Min(1,c.b*1.12f)));
+    }
+
+    static void Ring(Texture2D t,int cx,int cy,int r,Color c)
+    {
+        int rr=r*r, inner=(r-5)*(r-5);
+        for(int y=-r;y<=r;y++)for(int x=-r;x<=r;x++){int d=x*x+y*y;if(d<=rr&&d>=inner)Set(t,cx+x,cy+y,c);}
+    }
+
+    static void Circle(Texture2D t,int cx,int cy,int r,Color c)
+    {
+        int rr=r*r;for(int y=-r;y<=r;y++)for(int x=-r;x<=r;x++)if(x*x+y*y<=rr)Set(t,cx+x,cy+y,c);
+    }
+
+    static void Fill(Texture2D t,RectInt r,Color c)
+    {
+        int x0=Mathf.Max(0,r.x),y0=Mathf.Max(0,r.y),x1=Mathf.Min(W,r.xMax),y1=Mathf.Min(H,r.yMax);
+        Color32 cc=c;for(int y=y0;y<y1;y++)for(int x=x0;x<x1;x++)t.SetPixel(x,y,cc);
+    }
+
+    static void Stroke(Texture2D t,RectInt r,Color c,int s)
+    {
+        Fill(t,new RectInt(r.x,r.y,r.width,s),c);Fill(t,new RectInt(r.x,r.yMax-s,r.width,s),c);Fill(t,new RectInt(r.x,r.y,s,r.height),c);Fill(t,new RectInt(r.xMax-s,r.y,s,r.height),c);
+    }
+
+    static void Set(Texture2D t,int x,int y,Color c){if(x>=0&&x<W&&y>=0&&y<H)t.SetPixel(x,y,c);}
+
+    static Color C(string hex)
+    {
+        Color c;ColorUtility.TryParseHtmlString("#"+hex,out c);return c;
+    }
 }
